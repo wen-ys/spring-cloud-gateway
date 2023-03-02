@@ -123,7 +123,7 @@ public class RedisRateLimiterTests extends BaseWebClientTests {
 			"6, 10, 10, 3",
 			"5, 1, 5, 1",
 			"5, 10, 5, 2",
-			"2, 20, 20, 10",
+			"2, 20, 20, 10"
 	})
 	public void redisRateLimiterWithNSec(int replenishUnitSec, int replenishRate, int burstCapacity, int requestedTokens) throws Exception {
 		Assertions.assertTrue(replenishUnitSec > 1);  // over 1 sec
