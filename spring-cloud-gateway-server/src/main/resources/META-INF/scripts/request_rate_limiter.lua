@@ -10,6 +10,11 @@ local now = tonumber(ARGV[3])
 local requested = tonumber(ARGV[4])
 local refill_unit_sec = tonumber(ARGV[5])
 
+-- default value 1 sec
+if refill_unit_sec == nil then
+  refill_unit_sec = 1
+end
+
 local fill_time = (capacity/rate) * refill_unit_sec
 local ttl = math.floor(fill_time*2)
 local refill_per_sec = rate / refill_unit_sec
