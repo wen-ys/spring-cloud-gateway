@@ -236,7 +236,10 @@ public class RedisRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Confi
 
 		Config routeConfig = loadConfiguration(routeId);
 
-		// How many requests per second do you want a user to be allowed to do?
+		// How often will the tokens be refilled?
+		int replenishUnitSec = routeConfig.getReplenishUnitSec();
+
+		// How many requests per replenishUnitSec do you want a user to be allowed to do?
 		int replenishRate = routeConfig.getReplenishRate();
 
 		// How much bursting do you want to allow?
@@ -249,7 +252,7 @@ public class RedisRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Confi
 			List<String> keys = getKeys(id);
 
 			// The arguments to the LUA script. time() returns unixtime in seconds.
-			List<String> scriptArgs = Arrays.asList(replenishRate + "", burstCapacity + "", "", requestedTokens + "");
+			List<String> scriptArgs = Arrays.asList(replenishRate + "", burstCapacity + "", "", requestedTokens + "", replenishUnitSec + "");
 			// allowed, tokens_left = redis.eval(SCRIPT, keys, args)
 			Flux<List<Long>> flux = this.redisTemplate.execute(this.script, keys, scriptArgs);
 			// .log("redisratelimiter", Level.FINER);
@@ -312,6 +315,9 @@ public class RedisRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Confi
 	public static class Config {
 
 		@Min(1)
+		private int replenishUnitSec = 1;
+
+		@Min(1)
 		private int replenishRate;
 
 		@Min(0)
@@ -322,6 +328,10 @@ public class RedisRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Confi
 
 		public int getReplenishRate() {
 			return replenishRate;
+		}
+
+		public int getReplenishUnitSec() {
+			return replenishUnitSec;
 		}
 
 		public Config setReplenishRate(int replenishRate) {
@@ -346,6 +356,11 @@ public class RedisRateLimiter extends AbstractRateLimiter<RedisRateLimiter.Confi
 
 		public Config setRequestedTokens(int requestedTokens) {
 			this.requestedTokens = requestedTokens;
+			return this;
+		}
+
+		public Config setReplenishUnitSec(int replenishUnitSec) {
+			this.replenishUnitSec = replenishUnitSec;
 			return this;
 		}
 
